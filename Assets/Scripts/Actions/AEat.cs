@@ -5,9 +5,9 @@ public class AEat : GOAPAction
 {
     private void Awake()
     {
-        AddPrecondition("HasFood", true);
+        AddPrecondition("IsAtLocation", true);
         AddEffect("IsSatisfied", true);
-        AddEffect("HasFood", false);
+        AddEffect("IsAtLocation", false);
     }
 
     protected override IEnumerator PerformAction(WorldState state)

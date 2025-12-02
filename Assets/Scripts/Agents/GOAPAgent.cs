@@ -10,32 +10,33 @@ public class GOAPAgent : MonoBehaviour
     public Queue<GOAPAction> CurrentPlan { get; set; }
     public WorldState worldState = new WorldState();
 
-    private IAgentState currentState;
+    protected IAgentState currentState;
 
     private void Start()
     {
-        // Ejemplo de estado del mundo inicial
-        worldState["HasFood"] = false;
-        worldState["IsSatisfied"] = false;
+        InitializeAgent();
+    }
 
-        worldState["IsTired"] = true;
-        worldState["IsWellRest"] = false;
-
+    protected virtual void InitializeAgent()
+    {
+        PrepareWorldState();
         worldState.OnWorldStateChanged += OnWorldStateChanged;
 
         // Agregar acciones anexas al GameObject
         actions.AddRange(GetComponents<GOAPAction>());
-
-        // Goals
-        var eatGoal = new GOAPGoal("Eat", 2f);
-        eatGoal.desiredState["IsSatisfied"] = true;
-        goals.Add(eatGoal);
-
-        var sleepGoal = new GOAPGoal("Sleep", 1f);
-        sleepGoal.desiredState["IsWellRest"] = true;
-        goals.Add(sleepGoal);
+        PrepareGoals();
 
         ChangeState(new PlanningState(this));
+    }
+
+    protected virtual void PrepareWorldState()
+    {
+
+    }
+
+    protected virtual void PrepareGoals()
+    {
+
     }
 
     public void ChangeState(IAgentState newState)
@@ -61,7 +62,7 @@ public class GOAPAgent : MonoBehaviour
         return bestGoal;
     }
 
-    bool PlannerIsSatisfied(WorldState state, GOAPGoal goal)
+    protected virtual bool PlannerIsSatisfied(WorldState state, GOAPGoal goal)
     {
         foreach (var kv in goal.desiredState)
         {
@@ -72,7 +73,7 @@ public class GOAPAgent : MonoBehaviour
         return true;
     }
 
-    private void OnWorldStateChanged(string key, object value)
+    protected virtual void OnWorldStateChanged(string key, object value)
     {
         Debug.Log($"World changed: {key} = {value}. Replanning...");
         ChangeState(new ReplanningState(this));
