@@ -1,32 +1,33 @@
 using System.Collections;
 using UnityEngine;
 
-public class AGetFood : GOAPAction
+public class AGoToPosition : GOAPAction
 {
-    [SerializeField] private Transform fridge;
+    [SerializeField] private Transform target; 
 
     private void Awake()
     {
-        AddEffect("HasFood", true);
+        AddEffect("IsAtTarget", true);
+        cost = 1.0f;
     }
 
     protected override IEnumerator PerformAction(WorldState state)
     {
-        Debug.Log("Going for food...");
+        Debug.Log("Going to destiny...");
 
-        while (Vector3.Distance(transform.position, fridge.position) > 1.5f)
+        while (Vector3.Distance(transform.position, target.position) > 1.5f)
         {
             transform.position = Vector3.MoveTowards(
                 transform.position,
-                fridge.position,
+                target.position,
                 Time.deltaTime * 3.0f);
 
             yield return null;
         }
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.2f);
 
-        Debug.Log("Got food!");
+        Debug.Log("Arrived!");
         Complete(state);
     }
 }
