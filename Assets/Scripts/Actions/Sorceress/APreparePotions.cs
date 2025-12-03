@@ -5,17 +5,25 @@ public class APreparePotions : GOAPAction
 {
     private void Awake()
     {
-        AddPrecondition("HasGottenPlants", true);
+        if (animationsManager == null)
+            animationsManager = GetComponent<AnimationsManager>();
 
+        AddPrecondition("IsAtPotionsCraftLocation", true);
         AddEffect("HasPreparedPotions", true);
+
+        AddEffect("IsAtPlantsLocation", false);
+        AddEffect("HasCollectedPlants", false);
+        AddEffect("IsAtPotionsCraftLocation", false);
+
+        AddEffect("TownInDanger", false);
     }
 
     protected override IEnumerator PerformAction(WorldState state)
     {
-        Debug.Log("Preparing potions...");
-        yield return new WaitForSeconds(2f);
-        Debug.Log("Potions prepared! :P");
+        currentAnimationDuration = animationsManager.GetAnimationLength("Drink Potion");
+        animationsManager.AnimationFunction("Drink Potion", true);
 
+        yield return new WaitForSeconds(currentAnimationDuration);
         Complete(state);
     }
 }

@@ -5,30 +5,27 @@ public class GOAPAgent_Sorceress : GOAPAgent
         InitializeAgent();
     }
 
-    protected override void InitializeAgent()
-    {
-        base.InitializeAgent();
-    }
-
     protected override void PrepareWorldState()
     {
-        worldState["HasGottenPlants"] = false;
+        worldState["IsAtPlantsLocation"] = false;
+        worldState["HasCollectedPlants"] = false;
+        worldState["IsAtPotionsCraftLocation"] = false;
         worldState["HasPreparedPotions"] = false;
 
-        worldState["IsTired"] = true;
-        worldState["IsWellRest"] = false;
+        worldState["TownInDanger"] = false;
     }
 
     protected override void PrepareGoals()
     {
+        var collectPlantsGoal = new GOAPGoal("CollectPlants", 1.0f);
+        collectPlantsGoal.desiredState["HasCollectedPlants"] = true;
+        goals.Add(collectPlantsGoal);
+
         var preparePotionsGoal = new GOAPGoal("PreparePotions", 1.0f);
         preparePotionsGoal.desiredState["HasPreparedPotions"] = true;
         goals.Add(preparePotionsGoal);
 
-        print($"Meta: {preparePotionsGoal.name}");
-
-        var sleepGoal = new GOAPGoal("Sleep", 1.0f);
-        sleepGoal.desiredState["IsWellRest"] = true;
-        goals.Add(sleepGoal);
+        reactiveKeys.Add("TownInDanger");  // si esto cambia, replanear
+        reactiveKeys.Add("EnemyDetected"); // si LADRÓN aparece, replanear
     }
 }

@@ -3,8 +3,11 @@ using UnityEngine;
 
 public class ASleep : GOAPAction
 {
-    private void Awake()
+    private void OnEnable()
     {
+        if (animationsManager == null)
+            animationsManager = GetComponent<AnimationsManager>();
+
         AddPrecondition("IsTired", true);
         AddEffect("IsWellRest", true);
         AddEffect("IsTired", false);

@@ -5,8 +5,11 @@ public class AGetFood : GOAPAction
 {
     [SerializeField] private Transform fridge;
 
-    private void Awake()
+    private void OnEnable()
     {
+        if (animationsManager == null)
+            animationsManager = GetComponent<AnimationsManager>();
+
         AddEffect("HasFood", true);
     }
 

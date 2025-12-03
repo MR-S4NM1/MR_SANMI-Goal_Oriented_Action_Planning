@@ -3,8 +3,11 @@ using UnityEngine;
 
 public class AEat : GOAPAction
 {
-    private void Awake()
+    private void OnEnable()
     {
+        if (animationsManager == null)
+            animationsManager = GetComponent<AnimationsManager>();
+
         AddPrecondition("IsAtLocation", true);
         AddEffect("IsSatisfied", true);
         AddEffect("IsAtLocation", false);

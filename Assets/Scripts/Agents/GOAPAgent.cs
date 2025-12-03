@@ -10,12 +10,9 @@ public class GOAPAgent : MonoBehaviour
     public Queue<GOAPAction> CurrentPlan { get; set; }
     public WorldState worldState = new WorldState();
 
-    protected IAgentState currentState;
+    public HashSet<string> reactiveKeys = new HashSet<string>();
 
-    private void Start()
-    {
-        InitializeAgent();
-    }
+    protected IAgentState currentState;
 
     protected virtual void InitializeAgent()
     {
@@ -62,7 +59,7 @@ public class GOAPAgent : MonoBehaviour
         return bestGoal;
     }
 
-    protected virtual bool PlannerIsSatisfied(WorldState state, GOAPGoal goal)
+    protected bool PlannerIsSatisfied(WorldState state, GOAPGoal goal)
     {
         foreach (var kv in goal.desiredState)
         {
@@ -75,7 +72,15 @@ public class GOAPAgent : MonoBehaviour
 
     protected virtual void OnWorldStateChanged(string key, object value)
     {
-        Debug.Log($"World changed: {key} = {value}. Replanning...");
+        // Si la clave NO es importante para este NPC, ignórala.
+        if (!reactiveKeys.Contains(key))
+            return;
+
+        // Si estoy ejecutando un plan, NO replanear hasta que termine.
+        if (currentState is ExecutingPlanState)
+            return;
+
+        Debug.Log($"{name} reacts to world change: {key} = {value}");
         ChangeState(new ReplanningState(this));
     }
 }
