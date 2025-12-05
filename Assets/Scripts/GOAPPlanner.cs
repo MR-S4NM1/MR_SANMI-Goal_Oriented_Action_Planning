@@ -1,116 +1,193 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Core planner that generates action sequences to achieve AI goals.
+/// Implements forward-chaining search with heuristic action selection.
+/// </summary>
+/// <remarks>
+/// Author: Marco Antonio Garcia.
+/// Algorithm: Forward state-space planning with heuristics
+/// Complexity: O(n * m) where n = actions, m = planning depth
+/// Optimization: Early termination, action pruning
+/// </remarks>
+
 public class GOAPPlanner
 {
+    /// <summary>
+    /// Maximum planning iterations to prevent infinite loops.
+    /// </summary>
+    private const int MAX_PLANNING_ITERATIONS = 50;
+
+    /// <summary>
+    /// Generates a sequence of actions to achieve a specified goal.
+    /// </summary>
+    /// <param name="worldState">Current global world state.</param>
+    /// <param name="availableActions">Actions the agent can perform.</param>
+    /// <param name="goal">The goal to achieve.</param>
+    /// <returns>Queue of actions to execute, or null if no plan found.</returns>
     public Queue<GOAPAction> Plan(
-        WorldState worldState,  // Ahora es el estado GLOBAL
+        WorldState worldState,
         List<GOAPAction> availableActions,
         GOAPGoal goal)
     {
+        // Create simulated state for planning
+        WorldState simulatedState = CloneWorldState(worldState);
         List<GOAPAction> plan = new List<GOAPAction>();
-        WorldState simulatedState = new WorldState();
-        foreach (var kv in worldState)
+
+        int iteration = 0;
+
+        // Main planning loop
+        while (!IsGoalSatisfied(simulatedState, goal) && iteration < MAX_PLANNING_ITERATIONS)
         {
-            simulatedState[kv.Key] = kv.Value;
-        }
+            iteration++;
 
-        int safety = 0;
+            GOAPAction selectedAction = SelectBestAction(
+                simulatedState,
+                availableActions,
+                goal
+            );
 
-        while (!GoalSatisfied(simulatedState, goal.desiredState) && safety < 20)
-        {
-            safety++;
-
-            GOAPAction bestAction = null;
-            bool foundImprovingAction = false; // ¿ya encontré una acción que acerque directamente al goal?
-
-            foreach (var action in availableActions)
+            if (selectedAction == null)
             {
-                // 1) ¿Se cumplen sus precondiciones?
-                if (!action.ArePreconditionsMet(simulatedState))
-                    continue;
-
-                // 2) ¿Sus efectos cambian algo del estado? (si no, la ignoramos)
-                bool changesState = false;
-                foreach (var effect in action.Effects)
-                {
-                    if (!simulatedState.ContainsKey(effect.Key) ||
-                        !simulatedState[effect.Key].Equals(effect.Value))
-                    {
-                        changesState = true;
-                        break;
-                    }
-                }
-
-                if (!changesState)
-                    continue;
-
-                // 3) ¿Esta acción mejora directamente el goal?
-                bool improvesGoal = false;
-                foreach (var effect in action.Effects)
-                {
-                    if (goal.desiredState.ContainsKey(effect.Key) &&
-                        effect.Value.Equals(goal.desiredState[effect.Key]))
-                    {
-                        improvesGoal = true;
-                        break;
-                    }
-                }
-
-                // 4) Estrategia de elección:
-                //    - Si encontramos una acción que mejora el goal, la priorizamos.
-                //    - Si ninguna mejora el goal todavía, elegimos cualquiera que cambie el estado.
-                if (improvesGoal)
-                {
-                    if (!foundImprovingAction || action.cost < bestAction.cost)
-                    {
-                        bestAction = action;
-                        foundImprovingAction = true;
-                    }
-                }
-                else if (!foundImprovingAction) // solo consideramos "acciones de apoyo" si no hay una mejor
-                {
-                    if (bestAction == null || action.cost < bestAction.cost)
-                    {
-                        bestAction = action;
-                    }
-                }
-            }
-
-            if (bestAction == null)
-            {
-                //Debug.LogWarning("Planner: no encontré ninguna acción aplicable.");
+                Debug.LogWarning($"[GOAPPlanner] No applicable actions found at iteration {iteration}");
                 return null;
             }
 
-            // Aplicamos los efectos de la acción al estado simulado
-            foreach (var effect in bestAction.Effects)
-            {
-                simulatedState[effect.Key] = effect.Value;
-            }
-
-            plan.Add(bestAction);
+            // Apply action effects to simulated state
+            ApplyActionEffects(selectedAction, simulatedState);
+            plan.Add(selectedAction);
         }
 
-        if (!GoalSatisfied(simulatedState, goal.desiredState))
+        // Validate final plan
+        if (!IsGoalSatisfied(simulatedState, goal))
         {
-            //Debug.LogWarning("Planner: no se pudo alcanzar el goal.");
+            Debug.LogWarning($"[GOAPPlanner] Failed to satisfy goal '{goal.name}' after {iteration} iterations");
             return null;
         }
 
-        //Debug.Log("Planner: plan generado con " + plan.Count + " acciones.");
+        Debug.Log($"[GOAPPlanner] Generated plan with {plan.Count} actions for goal '{goal.name}'");
         return new Queue<GOAPAction>(plan);
     }
 
-    private bool GoalSatisfied(WorldState state, Dictionary<string, object> goalState)
+    /// <summary>
+    /// Creates a deep copy of the world state for simulation.
+    /// </summary>
+    private WorldState CloneWorldState(WorldState original)
     {
-        foreach (var g in goalState)
+        WorldState clone = new WorldState();
+        foreach (var kvp in original)
         {
-            if (!state.ContainsKey(g.Key))
-                return false;
+            clone[kvp.Key] = kvp.Value;
+        }
+        return clone;
+    }
 
-            if (!state[g.Key].Equals(g.Value))
+    /// <summary>
+    /// Selects the best action based on heuristic evaluation.
+    /// </summary>
+    private GOAPAction SelectBestAction(
+        WorldState currentState,
+        List<GOAPAction> actions,
+        GOAPGoal goal)
+    {
+        GOAPAction bestAction = null;
+        bool foundDirectImprovement = false;
+        float bestCost = float.MaxValue;
+
+        foreach (var action in actions)
+        {
+            // 1. Check preconditions
+            if (!action.ArePreconditionsMet(currentState))
+                continue;
+
+            // 2. Check if action changes anything
+            if (!ActionChangesState(action, currentState))
+                continue;
+
+            // 3. Evaluate action against goal
+            bool improvesGoal = ActionImprovesGoal(action, goal);
+
+            // 4. Selection heuristics:
+            //    - Prioritize actions that directly improve the goal
+            //    - Among equal candidates, choose lowest cost
+            if (improvesGoal)
+            {
+                if (!foundDirectImprovement || action.cost < bestCost)
+                {
+                    bestAction = action;
+                    bestCost = action.cost;
+                    foundDirectImprovement = true;
+                }
+            }
+            else if (!foundDirectImprovement)
+            {
+                if (action.cost < bestCost)
+                {
+                    bestAction = action;
+                    bestCost = action.cost;
+                }
+            }
+        }
+
+        return bestAction;
+    }
+
+    /// <summary>
+    /// Checks if an action would change the current world state.
+    /// </summary>
+    private bool ActionChangesState(GOAPAction action, WorldState state)
+    {
+        foreach (var effect in action.Effects)
+        {
+            if (!state.ContainsKey(effect.Key) ||
+                !state[effect.Key].Equals(effect.Value))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if an action directly contributes to goal satisfaction.
+    /// </summary>
+    private bool ActionImprovesGoal(GOAPAction action, GOAPGoal goal)
+    {
+        foreach (var effect in action.Effects)
+        {
+            if (goal.desiredState.ContainsKey(effect.Key) &&
+                goal.desiredState[effect.Key].Equals(effect.Value))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Applies an action's effects to a world state.
+    /// </summary>
+    private void ApplyActionEffects(GOAPAction action, WorldState state)
+    {
+        foreach (var effect in action.Effects)
+        {
+            state[effect.Key] = effect.Value;
+        }
+    }
+
+    /// <summary>
+    /// Checks if a goal is satisfied by the current world state.
+    /// </summary>
+    private bool IsGoalSatisfied(WorldState state, GOAPGoal goal)
+    {
+        foreach (var condition in goal.desiredState)
+        {
+            if (!state.ContainsKey(condition.Key) ||
+                !state[condition.Key].Equals(condition.Value))
+            {
                 return false;
+            }
         }
         return true;
     }
