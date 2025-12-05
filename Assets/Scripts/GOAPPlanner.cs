@@ -4,22 +4,20 @@ using UnityEngine;
 public class GOAPPlanner
 {
     public Queue<GOAPAction> Plan(
-        WorldState worldState,
+        WorldState worldState,  // Ahora es el estado GLOBAL
         List<GOAPAction> availableActions,
         GOAPGoal goal)
     {
         List<GOAPAction> plan = new List<GOAPAction>();
-
-        // Copiamos el estado inicial
-        WorldState currentState = new WorldState();
+        WorldState simulatedState = new WorldState();
         foreach (var kv in worldState)
         {
-            currentState[kv.Key] = kv.Value;
+            simulatedState[kv.Key] = kv.Value;
         }
 
         int safety = 0;
 
-        while (!GoalSatisfied(currentState, goal.desiredState) && safety < 20)
+        while (!GoalSatisfied(simulatedState, goal.desiredState) && safety < 20)
         {
             safety++;
 
@@ -29,15 +27,15 @@ public class GOAPPlanner
             foreach (var action in availableActions)
             {
                 // 1) ¿Se cumplen sus precondiciones?
-                if (!action.ArePreconditionsMet(currentState))
+                if (!action.ArePreconditionsMet(simulatedState))
                     continue;
 
                 // 2) ¿Sus efectos cambian algo del estado? (si no, la ignoramos)
                 bool changesState = false;
                 foreach (var effect in action.Effects)
                 {
-                    if (!currentState.ContainsKey(effect.Key) ||
-                        !currentState[effect.Key].Equals(effect.Value))
+                    if (!simulatedState.ContainsKey(effect.Key) ||
+                        !simulatedState[effect.Key].Equals(effect.Value))
                     {
                         changesState = true;
                         break;
@@ -81,26 +79,26 @@ public class GOAPPlanner
 
             if (bestAction == null)
             {
-                Debug.LogWarning("Planner: no encontré ninguna acción aplicable.");
+                //Debug.LogWarning("Planner: no encontré ninguna acción aplicable.");
                 return null;
             }
 
             // Aplicamos los efectos de la acción al estado simulado
             foreach (var effect in bestAction.Effects)
             {
-                currentState[effect.Key] = effect.Value;
+                simulatedState[effect.Key] = effect.Value;
             }
 
             plan.Add(bestAction);
         }
 
-        if (!GoalSatisfied(currentState, goal.desiredState))
+        if (!GoalSatisfied(simulatedState, goal.desiredState))
         {
-            Debug.LogWarning("Planner: no se pudo alcanzar el goal.");
+            //Debug.LogWarning("Planner: no se pudo alcanzar el goal.");
             return null;
         }
 
-        Debug.Log("Planner: plan generado con " + plan.Count + " acciones.");
+        //Debug.Log("Planner: plan generado con " + plan.Count + " acciones.");
         return new Queue<GOAPAction>(plan);
     }
 

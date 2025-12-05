@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 public abstract class GOAPAction : MonoBehaviour 
-{ 
+{
+    protected bool isCancelled = false;
     public float cost = 1f;
     protected Dictionary<string, object> preconditions = new Dictionary<string, object>();
     protected Dictionary<string, object> effects = new Dictionary<string, object>();
@@ -26,18 +27,28 @@ public abstract class GOAPAction : MonoBehaviour
             if (!state[p.Key].Equals(p.Value)) return false; 
         } 
         return true; 
-    } 
-    
-    public void Execute(WorldState state) 
-    { 
-        StartCoroutine(PerformAction(state)); 
-    } 
-    
-    protected abstract IEnumerator PerformAction(WorldState state); 
-    protected void Complete(WorldState state) 
-    { 
-        foreach (var e in effects) state[e.Key] = e.Value;
-        StopAllCoroutines(); 
-        OnActionCompleted?.Invoke(this); 
-    } 
+    }
+
+    public IEnumerator ExecuteRoutine(WorldState state)
+    {
+        isCancelled = false;
+        yield return PerformAction(state);
+    }
+
+    public virtual void Cancel()
+    {
+        isCancelled = true;
+        Debug.LogWarning($"[GOAPAction] {name} was cancelled! (Cancel() called)");
+    }
+
+    protected abstract IEnumerator PerformAction(WorldState state);
+    protected void Complete(WorldState state)
+    {
+        foreach (var e in effects)
+        {
+            GlobalWorldState.Instance.State[e.Key] = e.Value;
+        }
+
+        OnActionCompleted?.Invoke(this);
+    }
 }

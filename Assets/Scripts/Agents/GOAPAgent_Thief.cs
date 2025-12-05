@@ -1,29 +1,38 @@
 public class GOAPAgent_Thief : GOAPAgent
 {
-    private void Awake()
+    private void Start()
     {
-        InitializeAgent();
+        StartCoroutine(DelayedInitialize());
     }
 
     protected override void PrepareWorldState()
     {
-        worldState["HasGottenPlants"] = false;
-        worldState["HasPreparedPotions"] = false;
+        // Sus estados locales
+        worldState["IsAtItemsLocation"] = false;
+        worldState["HasStolenItem"] = false;
+        worldState["HasFled"] = false;
+        worldState["IsAlive"] = true;
 
-        worldState["IsTired"] = true;
-        worldState["IsWellRest"] = false;
+        // GLOBALS
+        worldState["TownInDanger"] = false;
+        worldState["ThiefCaught"] = false;  // él NO cambia esto, solo lo lee
     }
 
     protected override void PrepareGoals()
     {
-        var preparePotionsGoal = new GOAPGoal("PreparePotions", 1.0f);
-        preparePotionsGoal.desiredState["HasPreparedPotions"] = true;
-        goals.Add(preparePotionsGoal);
+        var stealGoal = new GOAPGoal("Steal", 5.0f);
+        stealGoal.desiredState["HasStolenItem"] = true;
+        goals.Add(stealGoal);
 
-        print($"Meta: {preparePotionsGoal.name}");
+        var fleeGoal = new GOAPGoal("Flee", 10.0f);
+        fleeGoal.desiredState["HasFled"] = true;
+        goals.Add(fleeGoal);
 
-        var sleepGoal = new GOAPGoal("Sleep", 1.0f);
-        sleepGoal.desiredState["IsWellRest"] = true;
-        goals.Add(sleepGoal);
+        var deathGoal = new GOAPGoal("Die", 10.0f);
+        deathGoal.desiredState["IsAlive"] = false;
+        goals.Add(deathGoal);
+
+        reactiveKeys.Add("TownInDanger");
+        reactiveKeys.Add("ThiefCaught");
     }
 }

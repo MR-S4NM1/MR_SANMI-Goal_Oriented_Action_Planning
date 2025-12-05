@@ -1,6 +1,6 @@
 public class AGetPlants : AGoToPosition
 {
-    private void Awake()
+    private void Start()
     {
         if (animationsManager == null)
             animationsManager = GetComponent<AnimationsManager>();

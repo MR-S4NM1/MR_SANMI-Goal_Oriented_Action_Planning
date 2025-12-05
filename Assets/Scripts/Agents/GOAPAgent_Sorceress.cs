@@ -1,31 +1,40 @@
 public class GOAPAgent_Sorceress : GOAPAgent
 {
-    private void Awake()
+    private void Start()
     {
-        InitializeAgent();
+        StartCoroutine(DelayedInitialize());
     }
 
     protected override void PrepareWorldState()
     {
+        // Sus tareas normales
         worldState["IsAtPlantsLocation"] = false;
         worldState["HasCollectedPlants"] = false;
         worldState["IsAtPotionsCraftLocation"] = false;
         worldState["HasPreparedPotions"] = false;
 
+        // GLOBALS
         worldState["TownInDanger"] = false;
+        worldState["ThiefCaught"] = false;
+
+        // LOCAL: rango exclusivo de ella
+        worldState["SorceressInRange"] = false;
     }
 
     protected override void PrepareGoals()
     {
-        var collectPlantsGoal = new GOAPGoal("CollectPlants", 1.0f);
-        collectPlantsGoal.desiredState["HasCollectedPlants"] = true;
-        goals.Add(collectPlantsGoal);
+        var collectGoal = new GOAPGoal("CollectPlants", 1.0f);
+        collectGoal.desiredState["HasCollectedPlants"] = true;
+        goals.Add(collectGoal);
 
-        var preparePotionsGoal = new GOAPGoal("PreparePotions", 1.0f);
-        preparePotionsGoal.desiredState["HasPreparedPotions"] = true;
-        goals.Add(preparePotionsGoal);
+        var potionsGoal = new GOAPGoal("PreparePotions", 1.0f);
+        potionsGoal.desiredState["HasPreparedPotions"] = true;
+        goals.Add(potionsGoal);
 
-        reactiveKeys.Add("TownInDanger");  // si esto cambia, replanear
-        reactiveKeys.Add("EnemyDetected"); // si LADRÓN aparece, replanear
+        var catchGoal = new GOAPGoal("CatchThief", 1.0f);
+        catchGoal.desiredState["ThiefCaught"] = true;
+        goals.Add(catchGoal);
+
+        reactiveKeys.Add("TownInDanger");
     }
 }
