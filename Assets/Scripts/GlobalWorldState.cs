@@ -1,3 +1,5 @@
+using UnityEngine;
+
 /// <summary>
 /// Singleton manager for the global world state.
 /// Ensures all AI agents share and react to the same world state.
@@ -7,8 +9,6 @@
 /// Pattern: Singleton
 /// Usage: Add to a GameObject in the scene
 /// </remarks>
-using UnityEngine;
-
 [DisallowMultipleComponent]
 public class GlobalWorldState : MonoBehaviour
 {

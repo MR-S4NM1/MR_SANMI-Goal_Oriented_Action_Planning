@@ -12,7 +12,6 @@ using UnityEngine;
 /// Optimization: Emergency goal bypass for critical situations
 /// Complexity: O(n log n) for goal sorting + O(m) for planning
 /// </remarks>
-
 public class PlanningState : IAgentState
 {
     private GOAPAgent agent;

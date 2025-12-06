@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 /// <summary>
 /// Defines an AI goal with desired world state conditions and priority.
 /// </summary>
@@ -6,8 +8,6 @@
 /// Structure: Immutable after creation
 /// Usage: Created by agent-specific implementations
 /// </remarks>
-using System.Collections.Generic;
-
 [System.Serializable]
 public class GOAPGoal
 {

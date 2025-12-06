@@ -11,7 +11,6 @@ using UnityEngine;
 /// Complexity: O(n * m) where n = actions, m = planning depth
 /// Optimization: Early termination, action pruning
 /// </remarks>
-
 public class GOAPPlanner
 {
     /// <summary>

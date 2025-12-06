@@ -9,7 +9,6 @@ using UnityEngine;
 /// State: Terminal when no goals exist
 /// Transition: PlanningState when goals become available
 /// </remarks>
-
 public class IdleState : IAgentState
 {
     private GOAPAgent agent;

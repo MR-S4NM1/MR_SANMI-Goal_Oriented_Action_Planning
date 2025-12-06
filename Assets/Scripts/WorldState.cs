@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 /// <summary>
 /// Represents the global world state shared between all AI agents.
 /// Implements the Observer pattern to notify agents of state changes.
@@ -7,9 +10,6 @@
 /// System: Goal-Oriented Action Planning (GOAP)
 /// Version: 1.0
 /// </remarks>
-using System;
-using System.Collections.Generic;
-
 public class WorldState : Dictionary<string, object>
 {
     /// <summary>
