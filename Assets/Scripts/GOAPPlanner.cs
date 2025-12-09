@@ -16,7 +16,7 @@ public class GOAPPlanner
     /// <summary>
     /// Maximum planning iterations to prevent infinite loops.
     /// </summary>
-    private const int MAX_PLANNING_ITERATIONS = 50;
+    private const int MAX_PLANNING_ITERATIONS = 99;
 
     /// <summary>
     /// Generates a sequence of actions to achieve a specified goal.

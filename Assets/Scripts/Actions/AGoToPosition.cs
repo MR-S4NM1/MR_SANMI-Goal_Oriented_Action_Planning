@@ -65,12 +65,6 @@ public class AGoToPosition : GOAPAction
         // Move until within threshold distance
         while (Vector3.Distance(transform.position, target.position) > distanceThreshold)
         {
-            // Check for cancellation
-            if (isCancelled)
-            {
-                yield break;
-            }
-
             // Calculate movement for this frame
             transform.position = Vector3.MoveTowards(
                 transform.position,

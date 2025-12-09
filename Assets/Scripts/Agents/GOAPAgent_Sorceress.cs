@@ -69,7 +69,7 @@ public class GOAPAgent_Sorceress : GOAPAgent
         goals.Add(potionsGoal);
 
         // Emergency goal: Threat neutralization
-        var catchGoal = new GOAPGoal("CatchThief", 1.0f);
+        var catchGoal = new GOAPGoal("CatchThief", 5.0f);
         catchGoal.desiredState["ThiefCaught"] = true;
         goals.Add(catchGoal);
 

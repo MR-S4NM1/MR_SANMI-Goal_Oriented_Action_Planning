@@ -1,3 +1,6 @@
+using UnityEngine;
+using System.Collections;
+
 /// <summary>
 /// Sorceress movement action for navigating to magical herb gathering locations.
 /// First step in potion crafting sequence with state reset capability.

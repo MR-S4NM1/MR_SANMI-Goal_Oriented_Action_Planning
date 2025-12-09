@@ -1,3 +1,5 @@
+using UnityEngine;
+
 /// <summary>
 /// Sorceress movement action for navigating to potion crafting station.
 /// Transitions from resource gathering to crafting phase.

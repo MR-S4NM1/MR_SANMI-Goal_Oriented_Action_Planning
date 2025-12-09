@@ -29,6 +29,8 @@ public class AApprehendThief_Guard : GOAPAction
 
         // Effect: Successfully captures thief (global state change)
         AddEffect("ThiefCaught", true);
+        AddEffect("TownInDanger", false);
+        AddEffect("HasFinishedPatrolling", false);
     }
 
     /// <summary>

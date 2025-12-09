@@ -1,3 +1,5 @@
+using UnityEngine;
+
 /// <summary>
 /// Sorceress emergency movement action for pursuing threats with magical approach.
 /// Emergency response equivalent to guard pursuit with magical specialization.
