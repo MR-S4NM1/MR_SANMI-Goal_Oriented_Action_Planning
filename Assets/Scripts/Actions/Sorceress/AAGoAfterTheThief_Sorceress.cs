@@ -24,6 +24,7 @@ public class AAGoAfterTheThief_Sorceress : AGoToPosition
 
         // Precondition: Only pursue during active danger
         AddPrecondition("TownInDanger", true);
+        //AddPrecondition("ThiefCaught", false);
 
         // Effect: Reaches magical combat range
         AddEffect("SorceressInRange", true);
