@@ -688,7 +688,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: GOAP
+  m_text: Goal Oriented Action Planning
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e4be34d146c9aac44ad964e6f5026481, type: 2}
   m_sharedMaterial: {fileID: -4072760223157446738, guid: e4be34d146c9aac44ad964e6f5026481, type: 2}
@@ -718,7 +718,7 @@ MonoBehaviour:
   m_fontSize: 318
   m_fontSizeBase: 318
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
